@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login Success</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-top: 50px;
+    }
+    .message {
+      font-size: 24px;
+      color: green;
+    }
+    .user-info {
+      margin-top: 20px;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <h1 class="message">You are logged in successfully!</h1>
+  <div class="user-info" id="user-info">
+    Loading your profile...
+  </div>
+
+  <script>
+    // Kullanıcı bilgilerini almak için erişim token'ı kullanılır
+    const getUserInfo = async (accessToken) => {
+      try {
+        const response = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+          headers: {
+            Authorization: `Bearer ${accessToken}`
+          }
+        });
+        const userInfo = await response.json();
+        return userInfo;
+      } catch (error) {
+        console.error("Failed to fetch user info:", error);
+        return null;
+      }
+    };
+
+    // URL'den "access_token" bilgisini al
+    const urlParams = new URLSearchParams(window.location.hash.substring(1)); // Fragment (#) kısmını al
+    const accessToken = urlParams.get('access_token');
+
+    if (accessToken) {
+      // Kullanıcı bilgilerini al ve ekrana yazdır
+      getUserInfo(accessToken).then(userInfo => {
+        const userInfoDiv = document.getElementById('user-info');
+        if (userInfo) {
+          userInfoDiv.innerHTML = `
+            <p><strong>Name:</strong> ${userInfo.name}</p>
+            <p><strong>Email:</strong> ${userInfo.email}</p>
+            <img src="${userInfo.picture}" alt="Profile Picture" style="border-radius: 50%; width: 100px;">
+          `;
+        } else {
+          userInfoDiv.textContent = "Failed to load user profile.";
+        }
+      });
+    } else {
+      // access_token yoksa hata mesajı göster
+      document.getElementById('user-info').textContent = "Access token is missing. Please login again.";
+    }
+  </script>
+</body>
+</html>
